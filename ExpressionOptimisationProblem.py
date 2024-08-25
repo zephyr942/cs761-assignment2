@@ -48,11 +48,11 @@ class ExpressionOptimisationProblem(object):
         crossoverSite = random.randrange(len(candidate1))
         if crossoverProbability < pc:
             newCandidate1 = candidate1[:crossoverSite] + candidate2[crossoverSite:]
-            # newCandidate2 = candidate2[:crossoverSite] + candidate1[crossoverSite:]
-            # candidate1 = newCandidate1
-            # candidate2 = newCandidate2
+            newCandidate2 = candidate2[:crossoverSite] + candidate1[crossoverSite:]
+            candidate1 = newCandidate1
+            candidate2 = newCandidate2
 
-        return newCandidate1
+        return candidate1,candidate2
 
     def mutate(self, candidate: list[str], pm: float) -> list[str]:
         """
@@ -87,9 +87,7 @@ class ExpressionOptimisationProblem(object):
         :param string: A candidate.
         :return: A list of integers representing the encoded candidate.
         """
-        # test = ['*', '+', '-', '/', '*']
-        # encode_test = ['-', '/', '*', '*', '+']
-        encoded_List = self.operations
+        encoded_List = self.operations.copy()
         encoded_candidate = []
         i = 0
         while encoded_List and i < len(string):
@@ -111,50 +109,51 @@ class ExpressionOptimisationProblem(object):
         :param indices: A list of indegers.
         :return: A list of operations representing the decoded candidate.
         """
-        decoded_List = self.operations
+        decoded_List = self.operations.copy()
         decoded_candidate = []
         i = 0
         while decoded_List and i < len(indices):
 
             decoded_candidate.append( decoded_List[indices[i]])
             decoded_List.pop(indices[i])
+
             i += 1
 
         return decoded_candidate
 
 
-def compute(self, operations: list[str]) -> float:
-    """
-    Compute the result of the expression given the list of operations
+    def compute(self, operations: list[str]) -> float:
+        """
+        Compute the result of the expression given the list of operations
 
-    :param operations: A list of operations.
-    :return: The result of the expression.
-    """
-    convertOperations = {
-        '+': operator.add,
-        '-': operator.sub,
-        '*': operator.mul,
-        '/': operator.truediv
-    }
-    currentNumber = self.numbers[0]
-    lowerPrecedence = []
+        :param operations: A list of operations.
+        :return: The result of the expression.
+        """
+        convertOperations = {
+            '+': operator.add,
+            '-': operator.sub,
+            '*': operator.mul,
+            '/': operator.truediv
+        }
+        currentNumber = self.numbers[0]
+        lowerPrecedence = []
 
-    i = 0
-    while i < len(operations):
-        if operations[i] == '*' or operations[i] == '/':
-            currentNumber = convertOperations[operations[i]](currentNumber, self.numbers[i + 1])
-        else:
-            lowerPrecedence.append(currentNumber)
-            lowerPrecedence.append(operations[i])
-            currentNumber = self.numbers[i + 1]
-        i += 1
-    lowerPrecedence.append(currentNumber)
+        i = 0
+        while i < len(operations):
+            if operations[i] == '*' or operations[i] == '/':
+                currentNumber = convertOperations[operations[i]](currentNumber, self.numbers[i + 1])
+            else:
+                lowerPrecedence.append(currentNumber)
+                lowerPrecedence.append(operations[i])
+                currentNumber = self.numbers[i + 1]
+            i += 1
+        lowerPrecedence.append(currentNumber)
 
-    total = lowerPrecedence[0]
-    i = 1
-    while i < len(lowerPrecedence):
-        if lowerPrecedence[i] in ('+', '-'):
-            total = convertOperations[lowerPrecedence[i]](total, lowerPrecedence[i + 1])
-        i += 2
+        total = lowerPrecedence[0]
+        i = 1
+        while i < len(lowerPrecedence):
+            if lowerPrecedence[i] in ('+', '-'):
+                total = convertOperations[lowerPrecedence[i]](total, lowerPrecedence[i + 1])
+            i += 2
 
-    return round(total, 2)
+        return round(total, 2)
