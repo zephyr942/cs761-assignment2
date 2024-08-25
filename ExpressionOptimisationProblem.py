@@ -22,7 +22,17 @@ class ExpressionOptimisationProblem(object):
         :param population: A list of candidates.
         :return: A selected candidate.
         """
-        return
+        if not population:
+            new_Candidate = self.operations
+            random.shuffle(new_Candidate)
+            selected_Candidate = new_Candidate
+        else:
+            selected_Candidate = population[0]
+            for i in range(1, len(population)):
+                if self.compute(selected_Candidate) < self.compute(population[i]):
+                    selected_Candidate = population[i]
+
+        return selected_Candidate
 
     def cross(self, candidate1: list[str], candidate2: list[str], pc: float) -> list[str]:
         """
@@ -38,11 +48,11 @@ class ExpressionOptimisationProblem(object):
         crossoverSite = random.randrange(len(candidate1))
         if crossoverProbability < pc:
             newCandidate1 = candidate1[:crossoverSite] + candidate2[crossoverSite:]
-            newCandidate2 = candidate2[:crossoverSite] + candidate1[crossoverSite:]
-            candidate1 = newCandidate1
-            candidate2 = newCandidate2
+            # newCandidate2 = candidate2[:crossoverSite] + candidate1[crossoverSite:]
+            # candidate1 = newCandidate1
+            # candidate2 = newCandidate2
 
-        return candidate1, candidate2
+        return newCandidate1
 
     def mutate(self, candidate: list[str], pm: float) -> list[str]:
         """
@@ -52,7 +62,7 @@ class ExpressionOptimisationProblem(object):
         :param pm: Mutation probability.
         :return: The mutated candidate, or the original candidate if no mutation occurs.
         """
-        fixOperations=["/", "*", "+", "-"]
+        fixOperations = ["/", "*", "+", "-"]
         mutationProbability = random.random()
         mutationSite = random.randrange(len(candidate))
         if mutationProbability < pm:
@@ -77,8 +87,23 @@ class ExpressionOptimisationProblem(object):
         :param string: A candidate.
         :return: A list of integers representing the encoded candidate.
         """
-        return
+        # test = ['*', '+', '-', '/', '*']
+        # encode_test = ['-', '/', '*', '*', '+']
+        encoded_List = self.operations
+        encoded_candidate = []
+        i = 0
+        while encoded_List and i < len(string):
+            numberIndex = 0
+            while numberIndex < len(encoded_List):
+                if string[i] == encoded_List[numberIndex]:
+                    encoded_candidate.append(numberIndex)
+                    encoded_List.pop(numberIndex)
+                    break
+                else:
+                    numberIndex += 1
+            i += 1
 
+        return encoded_candidate
     def decode(self, indices: list[int]) -> list[str]:
         """
         Decode a indices back into the original candidate.
@@ -86,48 +111,50 @@ class ExpressionOptimisationProblem(object):
         :param indices: A list of indegers.
         :return: A list of operations representing the decoded candidate.
         """
-        return
-
-    def compute(self, operations: list[str]) -> float:
-        """
-        Compute the result of the expression given the list of operations
-
-        :param operations: A list of operations.
-        :return: The result of the expression.
-        """
-
-        convertOperations = {
-            '+': operator.add,
-            '-': operator.sub,
-            '*': operator.mul,
-            '/': operator.truediv
-        }
-
-        # for i in range(len(self.numbers) - 1):
-        #     total = convertOperations[operations[i]](total, self.numbers[i + 1])
-        #     print(f"{self.numbers[i]} {operations[i]} {self.numbers[i + 1]} = {total}")
-
-        currentNumber = self.numbers[0]
-        lowerPrecedence = []
-
+        decoded_List = self.operations
+        decoded_candidate = []
         i = 0
-        while i < len(operations):
-            if operations[i] == '*' or operations[i] == '/':
-                currentNumber = convertOperations[operations[i]](currentNumber, self.numbers[i + 1])
-            else:
-                lowerPrecedence.append(currentNumber)
-                lowerPrecedence.append(operations[i])
-                currentNumber = self.numbers[i + 1]
+        while decoded_List and i < len(indices):
+
+            decoded_candidate.append( decoded_List[indices[i]])
+            decoded_List.pop(indices[i])
             i += 1
-        lowerPrecedence.append(currentNumber)
 
-        total = lowerPrecedence[0]
-        i = 1
-        while i < len(lowerPrecedence):
-            if lowerPrecedence[i] in ('+', '-'):
-                total = convertOperations[lowerPrecedence[i]](total, lowerPrecedence[i + 1])
-            i += 2
+        return decoded_candidate
 
-        return round(total, 2)
 
-        return
+def compute(self, operations: list[str]) -> float:
+    """
+    Compute the result of the expression given the list of operations
+
+    :param operations: A list of operations.
+    :return: The result of the expression.
+    """
+    convertOperations = {
+        '+': operator.add,
+        '-': operator.sub,
+        '*': operator.mul,
+        '/': operator.truediv
+    }
+    currentNumber = self.numbers[0]
+    lowerPrecedence = []
+
+    i = 0
+    while i < len(operations):
+        if operations[i] == '*' or operations[i] == '/':
+            currentNumber = convertOperations[operations[i]](currentNumber, self.numbers[i + 1])
+        else:
+            lowerPrecedence.append(currentNumber)
+            lowerPrecedence.append(operations[i])
+            currentNumber = self.numbers[i + 1]
+        i += 1
+    lowerPrecedence.append(currentNumber)
+
+    total = lowerPrecedence[0]
+    i = 1
+    while i < len(lowerPrecedence):
+        if lowerPrecedence[i] in ('+', '-'):
+            total = convertOperations[lowerPrecedence[i]](total, lowerPrecedence[i + 1])
+        i += 2
+
+    return round(total, 2)
