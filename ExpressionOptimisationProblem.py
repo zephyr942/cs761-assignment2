@@ -1,4 +1,3 @@
-import operator
 import random
 
 
@@ -25,12 +24,17 @@ class ExpressionOptimisationProblem(object):
         if not population:
             new_Candidate = self.operations
             random.shuffle(new_Candidate)
-            selected_Candidate = new_Candidate
-        else:
-            selected_Candidate = population[0]
-            for i in range(1, len(population)):
-                if self.compute(selected_Candidate) < self.compute(population[i]):
-                    selected_Candidate = population[i]
+            return new_Candidate
+
+        # Calculate fitness for each candidate
+        fitness_values = [self.compute(candidate) for candidate in population]
+
+        # Convert fitness to probabilities
+        total_fitness = sum(fitness_values)
+        probabilities = [fitness / total_fitness for fitness in fitness_values]
+
+        # Select a candidate based on its probabilities
+        selected_Candidate = random.choices(population, weights=probabilities, k=1)[0]
 
         return selected_Candidate
 
@@ -146,31 +150,28 @@ class ExpressionOptimisationProblem(object):
         :param operations: A list of operations.
         :return: The result of the expression.
         """
-        convertOperations = {
-            '+': operator.add,
-            '-': operator.sub,
-            '*': operator.mul,
-            '/': operator.truediv
-        }
-        currentNumber = self.numbers[0]
-        lowerPrecedence = []
 
-        i = 0
-        while i < len(operations):
-            if operations[i] == '*' or operations[i] == '/':
-                currentNumber = convertOperations[operations[i]](currentNumber, self.numbers[i + 1])
-            else:
-                lowerPrecedence.append(currentNumber)
-                lowerPrecedence.append(operations[i])
-                currentNumber = self.numbers[i + 1]
-            i += 1
-        lowerPrecedence.append(currentNumber)
+        expression = str(self.numbers[0])
+        for i in range(len(operations)):
+            expression += f" {operations[i]} {self.numbers[i + 1]}"
 
-        total = lowerPrecedence[0]
-        i = 1
-        while i < len(lowerPrecedence):
-            if lowerPrecedence[i] in ('+', '-'):
-                total = convertOperations[lowerPrecedence[i]](total, lowerPrecedence[i + 1])
-            i += 2
+        try:
+            result = eval(expression)
+        except ZeroDivisionError:
+            result = float('inf')
 
-        return round(total, 2)
+        return round(result, 2)
+
+    def selectBest(self, population: list[list[str]]) -> list[str]:
+
+        if not population:
+            new_Candidate = self.operations
+            random.shuffle(new_Candidate)
+            selected_Candidate = new_Candidate
+        else:
+            selected_Candidate = population[0]
+            for i in range(1, len(population)):
+                if self.compute(selected_Candidate) < self.compute(population[i]):
+                    selected_Candidate = population[i]
+
+        return selected_Candidate

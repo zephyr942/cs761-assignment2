@@ -38,19 +38,10 @@ class GeneticAlgorithm(object):
         isNotStabilized = True
 
         if len(self.offspring) > 0:
-            ''''
-            print("(self.problem.compute(self.offspring)", self.problem.select(self.offspring),
-                  self.problem.compute(self.problem.select(self.offspring)))
-            print("(self.problem.compute(bestFitness) ", self.bestFitness, self.problem.compute(self.bestFitness))
-            '''''
+
             if self.problem.compute(self.problem.selectBest(self.offspring)) > self.problem.compute(
                 self.bestFitness): self.bestFitness = self.problem.selectBest(self.offspring)
 
-            # compare with children
-            # difference = abs(self.problem.compute(self.offspring[0]) - self.problem.compute(self.offspring[1]))
-            # compare with parent
-            # difference = abs(self.problem.compute(self.offspring[0]) - self.problem.compute(self.candidate1))
-            # compare to the best fitness
             difference = abs(self.problem.compute(self.problem.selectBest(self.population)) - self.problem.compute(self.bestFitness))
 
             if difference / 100 < 0.0001:
@@ -58,10 +49,7 @@ class GeneticAlgorithm(object):
 
             if self.numberOfStabilization >= 20:
                 isNotStabilized = False
-                print("Best Fitness:", self.problem.compute(self.bestFitness))
-                print("Best Fitness Operator:", self.bestFitness)
-                print("Final Number of Stabilization:", self.numberOfStabilization)
-                print("Final Number of Iteration:", self.numberOfIteration)
+
         return isNotStabilized
 
     def run(self):
@@ -73,29 +61,17 @@ class GeneticAlgorithm(object):
 
         while self.terminate():
             self.numberOfIteration += 1
-            ''''
-            print("Iteration:", self.numberOfIteration)
-            print("size of offspring:", len(self.offspring))
-            print("best in offspring:", self.problem.select(self.offspring))
-            print("best Fitness in offspring:",  self.problem.compute(self.problem.select(self.offspring)))
-            '''''
+
             self.count += 1
 
             if len(self.offspring) > 0:
                 self.population.clear()
                 self.population = self.offspring.copy()
-                # if self.population_size >= 10 :
-                #     TopXPupulation=int(self.population_size*0.1)
-                # else:
-                #     TopXPupulation = int(self.population_size)
-                #
-                # self.population = sorted(self.offspring, key=self.problem.compute, reverse=True)[:TopXPupulation]
                 self.offspring.clear()
 
             i = 0
             while len(self.offspring) < self.population_size:
-                # if len(self.population) > 0:
-                #     self.candidate1, self.candidate2 = random.sample(self.population, 2)
+
                 self.candidate1 = self.problem.select(self.population)
                 self.candidate2 = self.problem.select(self.population)
                 newCandidate1, newCandidate2 = self.problem.cross(self.problem.encode(self.candidate1),
