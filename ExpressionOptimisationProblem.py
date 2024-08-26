@@ -46,11 +46,19 @@ class ExpressionOptimisationProblem(object):
         """
         crossoverProbability = random.random()
         crossoverSite = random.randrange(len(candidate1))
+
+
         if crossoverProbability < pc:
-            newCandidate1 = candidate1[:crossoverSite] + candidate2[crossoverSite:]
-            newCandidate2 = candidate2[:crossoverSite] + candidate1[crossoverSite:]
+            candidate1Copy = candidate1.copy()
+            candidate2Copy = candidate2.copy()
+            newCandidate1 = candidate1Copy[:crossoverSite] + candidate2Copy[crossoverSite:]
+            candidate1Copy = candidate1.copy()
+            candidate2Copy = candidate2.copy()
+            newCandidate2 = candidate2Copy[:crossoverSite] + candidate1Copy[crossoverSite:]
+
             candidate1 = newCandidate1
             candidate2 = newCandidate2
+
 
         return candidate1,candidate2
 
@@ -62,11 +70,20 @@ class ExpressionOptimisationProblem(object):
         :param pm: Mutation probability.
         :return: The mutated candidate, or the original candidate if no mutation occurs.
         """
-        fixOperations = ["/", "*", "+", "-"]
         mutationProbability = random.random()
-        mutationSite = random.randrange(len(candidate))
         if mutationProbability < pm:
-            candidate[mutationSite] = random.choice(fixOperations)
+            mutationSite1 = random.randrange(len(candidate))
+            mutationSite2 = mutationSite1
+            newCandidate = candidate.copy()
+            while mutationSite2 == mutationSite1:
+                mutationSite2 = random.randrange(len(candidate))
+
+            exchangeOperation1 = candidate[mutationSite1]
+            exchangeOperation2 = candidate[mutationSite2]
+
+            newCandidate[mutationSite1] = exchangeOperation2
+            newCandidate[mutationSite2] = exchangeOperation1
+            candidate = newCandidate
 
         return candidate
 
@@ -90,7 +107,8 @@ class ExpressionOptimisationProblem(object):
         encoded_List = self.operations.copy()
         encoded_candidate = []
         i = 0
-        while encoded_List and i < len(string):
+
+        while i < len(string):
             numberIndex = 0
             while numberIndex < len(encoded_List):
                 if string[i] == encoded_List[numberIndex]:
@@ -116,7 +134,6 @@ class ExpressionOptimisationProblem(object):
 
             decoded_candidate.append( decoded_List[indices[i]])
             decoded_List.pop(indices[i])
-
             i += 1
 
         return decoded_candidate
